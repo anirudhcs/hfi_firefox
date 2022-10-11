@@ -2361,6 +2361,133 @@ set_define("MOZ_HAS_REMOTE", has_remote)
 # ==============================================================
 
 
+# HFI configs
+# ==============================================================
+
+# def wasm_sandboxing_methods():
+#     return (
+#         "guard_pages",
+#         "bounds_checks",
+#         "masking",
+#         "hfi",
+#     )
+#
+# @depends(dependable(wasm_sandboxing_methods))
+# def default_wasm_sandboxing_method(choices):
+#     return choices[0]
+#
+# option(
+#     "--with-wasm-sandboxing-method",
+#     env="WASM_SANDBOXING_METHOD",
+#     help="{Choose wasm sandboxing method}",
+#     nargs=1,
+#     choices=dependable(wasm_sandboxing_methods),
+#     default=default_wasm_sandboxing_method,
+# )
+#
+# @depends("--with-wasm-sandboxing-method")
+# def full_wasm_sandboxing_method(value):
+#     if value:
+#         return value[0]
+#
+# @depends(full_wasm_sandboxing_method)
+# def wasm_sandboxing_method_define(method):
+#     return "WASM_USE_%s" % method.upper()
+#
+# set_config(wasm_sandboxing_method_define, True)
+# set_define(wasm_sandboxing_method_define, True)
+
+# ==============================================================
+
+option(
+    "--enable-wasm-use-guard-pages",
+    env="ENABLE_WASM_USE_GUARD_PAGES",
+    help="Enable wasm sandboxing with guard pages",
+    default=False,
+)
+
+@depends("--enable-wasm-use-guard-pages")
+def requires_wasm_use_guard_pages(value):
+    if value:
+        return True
+
+set_config("WASM_USE_GUARD_PAGES", requires_wasm_use_guard_pages)
+set_define("WASM_USE_GUARD_PAGES", requires_wasm_use_guard_pages)
+
+# ==============================================================
+
+option(
+    "--enable-wasm-use-bounds-checks",
+    env="ENABLE_WASM_USE_BOUNDS_CHECKS",
+    help="Enable wasm sandboxing with bounds checks",
+    default=False,
+)
+
+@depends("--enable-wasm-use-bounds-checks")
+def requires_wasm_use_bounds_checks(value):
+    if value:
+        return True
+
+set_config("WASM_USE_BOUNDS_CHECKS", requires_wasm_use_bounds_checks)
+set_define("WASM_USE_BOUNDS_CHECKS", requires_wasm_use_bounds_checks)
+
+# ==============================================================
+
+option(
+    "--enable-wasm-use-masking",
+    env="ENABLE_WASM_USE_MASKING",
+    help="Enable wasm sandboxing with masking",
+    default=False,
+)
+
+@depends("--enable-wasm-use-masking")
+def requires_wasm_use_masking(value):
+    if value:
+        return True
+
+set_config("WASM_USE_MASKING", requires_wasm_use_masking)
+set_define("WASM_USE_MASKING", requires_wasm_use_masking)
+
+# ==============================================================
+
+option(
+    "--enable-wasm-use-hfi",
+    env="ENABLE_WASM_USE_HFI",
+    help="Enable wasm sandboxing with hfi",
+    default=False,
+)
+
+@depends("--enable-wasm-use-hfi")
+def requires_wasm_use_hfi(value):
+    if value:
+        return True
+
+set_config("WASM_USE_HFI", requires_wasm_use_hfi)
+set_define("WASM_USE_HFI", requires_wasm_use_hfi)
+
+# ==============================================================
+
+option(
+    "--enable-hfi-emulated",
+    env="ENABLE_HFI_EMULATED",
+    help="Enable wasm hfi sandboxing with hfi emulated",
+    default=False,
+)
+
+@depends("--enable-hfi-emulated")
+def requires_hfi_emulated(value):
+    if value:
+        return True
+
+set_config("HFI_EMULATION", requires_hfi_emulated)
+set_define("HFI_EMULATION", requires_hfi_emulated)
+
+# ==============================================================
+
+set_define("WASM_NO_UVWASI", True)
+
+# ==============================================================
+
 def wasm_sandboxing_libraries():
     return (
         "graphite",
@@ -2472,9 +2599,33 @@ with only_when(requires_wasm_sandboxing & compile_environment):
 
     set_config("WASM_CXX", wasm_cxx_with_flags)
 
-    wasm_compile_flags = dependable(
+    wasm_compile_flags_base = dependable(
         ["-fno-exceptions", "-fno-strict-aliasing", "-Qunused-arguments"]
     )
+
+    # @depends(wasm_compile_flags_base, wasm_sandboxing_method_define, requires_hfi_emulated)
+    # def wasm_compile_flags(wasm_compile_flags_base, wasm_sandboxing_method_define, requires_hfi_emulated):
+    #     if requires_hfi_emulated:
+    #         return wasm_compile_flags_base + [ "-D%s" % wasm_sandboxing_method_define, "-DHFI_EMULATION" ]
+    #     else:
+    #         return wasm_compile_flags_base + [ "-D%s" % wasm_sandboxing_method_define ]
+
+    @depends(wasm_compile_flags_base, "--enable-wasm-use-guard-pages", "--enable-wasm-use-bounds-checks", "--enable-wasm-use-masking", "--enable-wasm-use-hfi", "--enable-hfi-emulated")
+    def wasm_compile_flags(flags_base, guard_pages, bounds_checks, masking, hfi, hfi_emulated):
+        result = flags_base
+        if guard_pages:
+            result.append("-DWASM_USE_GUARD_PAGES")
+        if bounds_checks:
+            result.append("-DWASM_USE_BOUNDS_CHECKS")
+        if masking:
+            result.append("-DWASM_USE_MASKING")
+        if hfi:
+            result.append("-DWASM_USE_HFI")
+        if hfi_emulated:
+             result.append("-DHFI_EMULATION")
+        result.append("-DWASM_NO_UVWASI")
+        return result
+
     option(env="WASM_CFLAGS", nargs=1, help="Options to pass to WASM_CC")
 
     @depends("WASM_CFLAGS", wasm_compile_flags)

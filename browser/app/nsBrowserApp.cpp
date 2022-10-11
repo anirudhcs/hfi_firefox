@@ -46,6 +46,10 @@
 #include "mozilla/StartupTimeline.h"
 #include "BaseProfiler.h"
 
+#ifdef HFI_EMULATION
+#include "wasm-rt.h"
+#endif
+
 #ifdef LIBFUZZER
 #  include "FuzzerDefs.h"
 #endif
@@ -259,6 +263,9 @@ uint32_t gBlocklistInitFlags = eDllBlocklistInitFlagDefault;
 #endif
 
 int main(int argc, char* argv[], char* envp[]) {
+#ifdef HFI_EMULATION
+wasm_rt_hfi_emulate_reserve_lower4();
+#endif
 #if defined(MOZ_ENABLE_FORKSERVER)
   if (strcmp(argv[argc - 1], "forkserver") == 0) {
     nsresult rv = InitXPCOMGlue(LibLoadingStrategy::NoReadAhead);
