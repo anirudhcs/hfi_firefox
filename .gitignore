@@ -194,3 +194,4 @@ browser/components/storybook/node_modules/
 browser/components/storybook/storybook-static/
 
 ffbuilds/
+*.develop
