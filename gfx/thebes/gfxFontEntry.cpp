@@ -629,6 +629,9 @@ hb_face_t* gfxFontEntry::GetHBFace() {
   return hb_face_reference(mHBFace);
 }
 
+static void* savedGraphiteSandbox = nullptr;
+static std::mutex savedGraphiteSandboxLock;
+
 struct gfxFontEntry::GrSandboxData {
   rlbox_sandbox_gr sandbox;
   sandbox_callback_gr<const void* (*)(const void*, unsigned int, unsigned int*)>
@@ -648,10 +651,26 @@ struct gfxFontEntry::GrSandboxData {
   }
 
   ~GrSandboxData() {
-    grGetTableCallback.unregister();
-    grReleaseTableCallback.unregister();
-    grGetGlyphAdvanceCallback.unregister();
-    sandbox.destroy_sandbox();
+    // grGetTableCallback.unregister();
+    // grReleaseTableCallback.unregister();
+    // grGetGlyphAdvanceCallback.unregister();
+    // sandbox.destroy_sandbox();
+  }
+
+  static GrSandboxData* getGraphiteSandbox() {
+    // return new GrSandboxData();
+    {
+      std::lock_guard<std::mutex> lock(savedGraphiteSandboxLock);
+      if (savedGraphiteSandbox == nullptr) {
+        savedGraphiteSandbox = new GrSandboxData();
+      }
+    }
+
+    return (GrSandboxData*) savedGraphiteSandbox;
+  }
+
+  static void cleanGraphiteSandbox(GrSandboxData* sbx) {
+    // delete sbx;
   }
 };
 
@@ -723,7 +742,7 @@ tainted_opaque_gr<gr_face*> gfxFontEntry::GetGrFace() {
     // we need to make sure the underlying sandbox supports threading.
     MOZ_ASSERT(NS_IsMainThread());
 
-    mSandboxData = new GrSandboxData();
+    mSandboxData = GrSandboxData::getGraphiteSandbox();
 
     auto p_faceOps = mSandboxData->sandbox.malloc_in_sandbox<gr_face_ops>();
     if (!p_faceOps) {
@@ -771,7 +790,7 @@ void gfxFontEntry::ReleaseGrFace(tainted_opaque_gr<gr_face*> aFace) {
     t_mGrFace = nullptr;
     mGrFace = t_mGrFace.to_opaque();
 
-    delete mSandboxData;
+    GrSandboxData::cleanGraphiteSandbox(mSandboxData);
     mSandboxData = nullptr;
 
     mGrFaceInitialized = false;
