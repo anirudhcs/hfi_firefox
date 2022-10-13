@@ -12,7 +12,10 @@ build-stock-debug:
 build-hfiemu-debug:
 	cd .. && MOZCONFIG=mozconfig_hfiemu_debug ./mach build
 
-build-debug: build-stock-debug build-hfiemu-debug
+build-hfiemu2-debug:
+	cd .. && MOZCONFIG=mozconfig_hfiemu2_debug ./mach build
+
+build-debug: build-stock-debug build-hfiemu-debug build-hfiemu2-debug
 
 build-stock-release:
 	cd .. && MOZCONFIG=mozconfig_stock_release ./mach build
@@ -20,7 +23,10 @@ build-stock-release:
 build-hfiemu-release:
 	cd .. && MOZCONFIG=mozconfig_hfiemu_release ./mach build
 
-build: build-stock-release build-hfiemu-release
+build-hfiemu2-release:
+	cd .. && MOZCONFIG=mozconfig_hfiemu2_release ./mach build
+
+build: build-stock-release build-hfiemu-release build-hfiemu2-release
 
 clean:
 	rm -rf ../ffbuilds

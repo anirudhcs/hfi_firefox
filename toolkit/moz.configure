@@ -2484,6 +2484,23 @@ set_define("HFI_EMULATION", requires_hfi_emulated)
 
 # ==============================================================
 
+option(
+    "--enable-hfi-emulated2",
+    env="ENABLE_HFI_EMULATED2",
+    help="Enable wasm hfi sandboxing with hfi emulated2",
+    default=False,
+)
+
+@depends("--enable-hfi-emulated2")
+def requires_hfi_emulated2(value):
+    if value:
+        return True
+
+set_config("HFI_EMULATION2", requires_hfi_emulated2)
+set_define("HFI_EMULATION2", requires_hfi_emulated2)
+
+# ==============================================================
+
 set_define("WASM_NO_UVWASI", True)
 
 # ==============================================================
