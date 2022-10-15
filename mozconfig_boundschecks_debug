@@ -1,0 +1,7 @@
+. $topsrcdir/mozconfig_common
+
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/ffbuilds/firefox_boundschecks_debug
+ac_add_options --enable-wasm-use-bounds-checks
+
+ac_add_options --enable-debug
+ac_add_options --disable-optimize
