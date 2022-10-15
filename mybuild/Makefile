@@ -29,7 +29,7 @@ build-stock-release:
 build-boundschecks-release:
 	cd .. && MOZCONFIG=mozconfig_boundschecks_release ./mach build
 
-build-stock-maskingelease:
+build-masking-release:
 	cd .. && MOZCONFIG=mozconfig_masking_release ./mach build
 
 build-hfiemu-release:
