@@ -6,7 +6,7 @@
 # FFBuildDir=$BROWSER_BUILD_PATH
 
 FFBuildDir=$(realpath ./ffbuilds)
-FFVersions=("stock" "hfiemu" "hfiemu2")
+FFVersions=("stock" "hfiemu" "hfiemu2" "boundschecks" "masking")
 
 if [ -z "$1" ]; then
 	echo "Missing output_folder. Expected argument $0 output_folder [graphite_perf_test, jpeg_perf, jpeg_black_width_perf]";
