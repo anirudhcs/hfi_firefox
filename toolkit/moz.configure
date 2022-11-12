@@ -2451,6 +2451,23 @@ set_define("WASM_USE_MASKING", requires_wasm_use_masking)
 # ==============================================================
 
 option(
+    "--enable-wasm-use-segment",
+    env="ENABLE_WASM_USE_SEGMENT",
+    help="Enable wasm sandboxing with segment",
+    default=False,
+)
+
+@depends("--enable-wasm-use-segment")
+def requires_wasm_use_segment(value):
+    if value:
+        return True
+
+set_config("WASM_USE_SEGMENT", requires_wasm_use_segment)
+set_define("WASM_USE_SEGMENT", requires_wasm_use_segment)
+
+# ==============================================================
+
+option(
     "--enable-wasm-use-hfi",
     env="ENABLE_WASM_USE_HFI",
     help="Enable wasm sandboxing with hfi",
