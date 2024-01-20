@@ -4,7 +4,7 @@ PARALLEL_COUNT=$(shell nproc)
 
 bootstrap:
 	mkdir -p ~/.mozbuild
-	cd .. && ./mach --no-interactive bootstrap --application-choice browser --disable-bootstrap
+	cd .. && ./mach --no-interactive bootstrap --application-choice browser
 
 build-stock-debug:
 	cd .. && MOZCONFIG=mozconfig_stock_debug ./mach build
